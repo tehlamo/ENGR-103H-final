@@ -26,3 +26,5 @@ You will also get to choose between 2 randomized options, being +1 health potion
 Once you reach 60 points, you will have to fight a boss, and if you defeat the boss, you win the game.
 
 If you die anywhere, your highest score will be saved as long as the arduino is still plugged into the computer.
+
+Total inputs: Accelerometer detection, right button, left button, switch ==> 4 different inputs.
