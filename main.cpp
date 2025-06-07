@@ -50,6 +50,8 @@ class enemies {
     String eName;
 };
 
+int block = random(1, 101);
+
 enemies enemyOrder[5];
 enemies currentEnemy;
 
@@ -73,7 +75,7 @@ bool tapDetected;
 uint8_t rollNumber;
 float X, Y, Z, totalAccel;
 
-int lowRoll = 2;
+int lowRoll = 0;
 int highRoll = 0;
 
 uint8_t dicePixels[6][6] = {  // Pixel pattern for dice roll
@@ -196,7 +198,7 @@ void loop() {
     switchFlag = false;
   }
 
-  if (switchState && gameState && !fightState && switchCallout && enemyAlive) {
+  if (switchState && gameState && !fightState && switchCallout && enemyAlive && !playerStunned && !enemyStunned) {
     SwitchCallout();
     switchCallout = false;
   } else if (!switchState && gameState && !fightState && enemyAlive) {
@@ -205,86 +207,88 @@ void loop() {
     switchCallout = true;
   }
 
-  if (switchState && gameState && fightState && !attackState && !blockState && !potState && enemyAlive) {
+  if (switchState && gameState && fightState && !attackState && !blockState && !potState && enemyAlive && !playerStunned && !enemyStunned) {
     Pots();
     potState = true;
   }
 
-  if (!switchState && gameState && fightState && !attackState && !blockState && potState && enemyAlive) {
+  if (!switchState && gameState && fightState && !attackState && !blockState && potState && enemyAlive && !playerStunned && !enemyStunned) {
     Fight();
     potState = false;
   }
 
-  if ((switchState || !switchState) && gameState && fightState && !attackState && !blockState && (potState || !potState) && shakeDetected && enemyAlive) {
+  if ((switchState || !switchState) && gameState && fightState && !attackState && !blockState && (potState || !potState) && shakeDetected && enemyAlive && !playerStunned && !enemyStunned) {
     SkipTurn();
     shakeDetected = false;
   }
 
-  if (!switchState && gameState && fightState && !attackState && !blockState && !potState && leftFlag && enemyAlive) {
+  if (!switchState && gameState && fightState && !attackState && !blockState && !potState && leftFlag && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     Block();
     blockState = true;
     leftFlag = false;
   }
 
-  if (!switchState && gameState && fightState && !attackState && !blockState && !potState && rightFlag && enemyAlive) {
+  if (!switchState && gameState && fightState && !attackState && !blockState && !potState && rightFlag && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     Attack();
     attackState = true;
     rightFlag = false;
   }
 
-  if (switchState && gameState && fightState && !attackState && !blockState && potState && leftFlag && (p1.hPots > 0) && enemyAlive) {
+  if (switchState && gameState && fightState && !attackState && !blockState && potState && leftFlag && (p1.hPots > 0) && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     HealthPot();
     leftFlag = false;
-  } else if (switchState && gameState && fightState && !attackState && !blockState && potState && leftFlag && (p1.sPots == 0) && enemyAlive) {
+  } else if (switchState && gameState && fightState && !attackState && !blockState && potState && leftFlag && (p1.sPots == 0) && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     NoPots();
     Pots();
     leftFlag = false;
   }
 
-  if (switchState && gameState && fightState && !attackState && !blockState && potState && rightFlag && (p1.sPots > 0) && enemyAlive) {
+  if (switchState && gameState && fightState && !attackState && !blockState && potState && rightFlag && (p1.sPots > 0) && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     StrengthPot();
     rightFlag = false;
-  } else if (switchState && gameState && fightState && !attackState && !blockState && potState && rightFlag && (p1.sPots == 0) && enemyAlive) {
+  } else if (switchState && gameState && fightState && !attackState && !blockState && potState && rightFlag && (p1.sPots == 0) && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     NoPots();
     Pots();
     rightFlag = false;
   }
 
-  if (!switchState && gameState && fightState && !attackState && blockState && !potState && !normBlock && !diceBlock && leftFlag && enemyAlive) {
+  if (!switchState && gameState && fightState && !attackState && blockState && !potState && !normBlock && !diceBlock && leftFlag && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
-    NormBlock();
     normBlock = true;
+    NormBlock();
+    // Serial.print(normBlock);
     leftFlag = false;
+    // delay(5000);
   }
 
-  if (!switchState && gameState && fightState && !attackState && blockState && !potState && !normBlock && !diceBlock && rightFlag && enemyAlive) {
+  if (!switchState && gameState && fightState && !attackState && blockState && !potState && !normBlock && !diceBlock && rightFlag && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     DiceBlock();
     diceBlock = true;
     leftFlag = false;
   }
 
-  if (switchState && gameState && fightState && attackState && !blockState && potState && !normAttack && !diceAttack && leftFlag && enemyAlive) {
+  if (switchState && gameState && fightState && attackState && !blockState && potState && !normAttack && !diceAttack && leftFlag && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     NormAttack();
     normAttack = true;
     rightFlag = false;
   }
 
-  if (switchState && gameState && fightState && attackState && !blockState && potState && !normAttack && !diceAttack && rightFlag && enemyAlive) {
+  if (switchState && gameState && fightState && attackState && !blockState && potState && !normAttack && !diceAttack && rightFlag && enemyAlive && !playerStunned && !enemyStunned) {
     delay(5);
     DiceAttack();
     diceAttack = true;
     rightFlag = false;
   }
 
-  if (!switchState && gameState && fightState && enemyAttack && enemyAlive) {
+  if (!switchState && gameState && fightState && enemyAttack && enemyAlive && !playerStunned && !enemyStunned) {
     Fight();
     attackState = false;
     blockState = false;
@@ -293,7 +297,7 @@ void loop() {
     normBlock = false;
     diceBlock = false;
     enemyAttack = false;
-  } else if (switchState && gameState && fightState && enemyAttack && enemyAlive) {
+  } else if (switchState && gameState && fightState && enemyAttack && enemyAlive && !playerStunned && !enemyStunned) {
     SwitchCallout();
     switchCallout = false;
     attackState = false;
@@ -303,6 +307,14 @@ void loop() {
     normBlock = false;
     diceBlock = false;
     enemyAttack = false;
+  }
+
+  if ((switchState || !switchState) && gameState && fightState && !enemyAttack && enemyAlive && playerStunned && !enemyStunned) {
+    LoseTurn();
+    playerStunned = false;
+  } else if ((switchState || !switchState) && gameState && fightState && !enemyAttack && enemyAlive && !playerStunned && enemyStunned) {
+    GainTurn();
+    enemyStunned = false;
   }
 
 
@@ -590,10 +602,11 @@ void EnemyAttack() {
   delay(1000);
   Serial.println(".");
   Serial.println("");
-  
-  int blockChance = random(1,101);
+  delay(1000);
+  // Serial.print(block);
+  // Serial.print(normBlock);
 
-  if (blockChance <= currentEnemy.blockChance) {
+  if (block <= currentEnemy.blockChance) {
     if (normBlock || diceBlock) {
       Serial.print(currentEnemy.eName);
       Serial.println(" has decided to block and has rammed into you with their own block, stunning you!");
@@ -601,37 +614,76 @@ void EnemyAttack() {
 
       if (diceBlock) {
         if (rollNumber < 3) {
-          for (int chance = 2; chance = rollNumber; chance--) {
-            lowRoll--;
+          lowRoll = 0;
+
+          for (int chance = 3; chance = rollNumber; chance--) {
+            lowRoll++;
           }
+
           p1.pHp = p1.pHp - lowRoll;
           Serial.print("Because you rolled a ");
           Serial.print(rollNumber);
           Serial.print(", you took ");
           Serial.print(lowRoll);
-          Serial.print(" damage!");
+          Serial.print(" extra damage!");
         } else if (rollNumber >= 3) {
+          highRoll = 0;
+
           for (int chance = 3; chance = rollNumber; chance++) {
             highRoll++;
           }
+
           currentEnemy.eHp = currentEnemy.eHp - highRoll;
           Serial.print("Because you rolled a ");
           Serial.print(rollNumber);
           Serial.print(", you dealt ");
           Serial.print(highRoll);
-          Serial.print(" damage!");
+          Serial.print(" extra damage!");
         }
       }
+      delay(5000);
     } else if (normAttack || diceAttack) {
       Serial.print(currentEnemy.eName);
       Serial.print(" has decided to block and has blocked your attack, stunning you!");
+      playerStunned = true;
+      delay(5000);
     }
-  } else if (blockChance > currentEnemy.blockChance) {
+  } else if (block > currentEnemy.blockChance) {
     if (normBlock || diceBlock) {
       Serial.print(currentEnemy.eName);
       Serial.print(" decided to attack and you blocked it's attack, stunning it!");
       enemyStunned = true;
     } else if (normAttack || diceAttack) {
+      if (diceAttack) {
+        if (rollNumber < 3) {
+          lowRoll = 0;
+
+          for (int chance = 3; chance = rollNumber; chance--) {
+            lowRoll++;
+          }
+
+          currentEnemy.eHp = currentEnemy.pHp - p1.pDmg + lowRoll;
+          Serial.print("Because you rolled a ");
+          Serial.print(rollNumber);
+          Serial.print(", you dealt ");
+          Serial.print(lowRoll);
+          Serial.print(" less damage!");
+        } else if (rollNumber >= 3) {
+          highRoll = 0;
+
+          for (int chance = 3; chance = rollNumber; chance++) {
+            highRoll++;
+          }
+
+          currentEnemy.eHp = currentEnemy.pHp - p1.pDmg - highRoll;
+          Serial.print("Because you rolled a ");
+          Serial.print(rollNumber);
+          Serial.print(", you dealt ");
+          Serial.print(highRoll);
+          Serial.print(" extra damage!");
+        }
+      }
+
       Serial.print("The ");
       Serial.print(currentEnemy.eName);
       Serial.println(" fights back and deals damage back to you!");
@@ -640,7 +692,13 @@ void EnemyAttack() {
       currentEnemy.eHp = currentEnemy.eHp - p1.pDmg;
       Serial.println("");
       Serial.print("You have dealt ");
-      Serial.print(p1.pDmg);
+      if (rollNumber = 0) {
+        Serial.print(p1.pDmg);
+      } else if (rollNumber > 0 && rollNumber < 3) {
+        Serial.print(p1.pDmg - lowRoll);
+      } else if (rollNumber >=3 && rollNumber < 7) {
+        Serial.print(p1.pDmg + highRoll);
+      }
       Serial.print(" DMG to the ");
       Serial.print(currentEnemy.eName);
       delay(1500);
@@ -654,6 +712,41 @@ void EnemyAttack() {
 }
 
 void SkipTurn() {
+
+}
+
+void LoseTurn() {
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+  Serial.print(currentEnemy.eName);
+  Serial.print(" is choosing what to do");
+  delay(1000);
+  Serial.print(".");
+  delay(1000);
+  Serial.print(".");
+  delay(1000);
+  Serial.println(".");
+  Serial.println("");
+  delay(1000);
+
+  if (block <= currentEnemy.blockChance) {
+    Serial.print(currentEnemy.eName);
+    Serial.print("Has decided to waste their turn by");
+    delay(1000);
+    Serial.print(".");
+    delay(1000);
+    Serial.print(".");
+    delay(1000);
+    Serial.print(".");
+    delay(1000);
+    Serial.print(" blocking?");
+  }
+}
+
+void GainTurn() {
 
 }
 
