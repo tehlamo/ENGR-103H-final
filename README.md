@@ -28,3 +28,4 @@ Once you reach 60 points, you will have to fight a boss, and if you defeat the b
 If you die anywhere, your highest score will be saved as long as the arduino is still plugged into the computer.
 
 Total inputs: Accelerometer detection, right button, left button, switch ==> 4 different inputs.
+Total outputs: LEDs, sound => 2 different outputs.
