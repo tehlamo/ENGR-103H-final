@@ -42,6 +42,7 @@ bool waitingRoll = false;
 bool rolled = false;
 bool numberGiven = false;
 bool items = false;
+bool inCardSelection = false;
 
 int cardRandomizer1;
 int cardRandomizer2;
@@ -424,6 +425,11 @@ void loop() {
       CardSelect2();
       rightFlag = false;
     }
+  }
+
+  if (!inCardSelection && !gameState && !enemyAlive && !fightState) {
+    Game();
+    gameState = true;
   }
   
   // Rolling momentum
@@ -1341,6 +1347,7 @@ void Items() {
   cardRandom2 = cardRandomizer2;
 
   Cards();
+  inCardSelection = true;
 }
 
 void Cards() {
@@ -1403,7 +1410,8 @@ void CardSelect1() {
     numberGiven = false;
     items = false;
 
-    Game();
+    inCardSelection = false;
+    gameState = false;
   } else if (cardRandom1 == 1) {
     Serial.println("");
     Serial.println("");
@@ -1429,7 +1437,8 @@ void CardSelect1() {
     numberGiven = false;
     items = false;
 
-    Game();
+    inCardSelection = false;
+    gameState = false;
   } else if (cardRandom1 == 2) {
     Serial.println("");
     Serial.println("");
@@ -1455,7 +1464,8 @@ void CardSelect1() {
     numberGiven = false;
     items = false;
 
-    Game();
+    inCardSelection = false;
+    gameState = false;
   } else if (cardRandom1 == 3) {
     Serial.println("");
     Serial.println("");
@@ -1481,7 +1491,8 @@ void CardSelect1() {
     numberGiven = false;
     items = false;
 
-    Game();
+    inCardSelection = false;
+    gameState = false;
   }
 }
 
@@ -1511,7 +1522,8 @@ void CardSelect2() {
     numberGiven = false;
     items = false;
 
-    Game();
+    inCardSelection = false;
+    gameState = false;
   } else if (cardRandom2 == 1) {
     Serial.println("");
     Serial.println("");
@@ -1537,7 +1549,8 @@ void CardSelect2() {
     numberGiven = false;
     items = false;
 
-    Game();
+    inCardSelection = false;
+    gameState = false;
   } else if (cardRandom2 == 2) {
     Serial.println("");
     Serial.println("");
@@ -1563,7 +1576,8 @@ void CardSelect2() {
     numberGiven = false;
     items = false;
 
-    Game();
+    inCardSelection = false;
+    gameState = false;
   } else if (cardRandom2 == 3) {
     Serial.println("");
     Serial.println("");
@@ -1589,7 +1603,8 @@ void CardSelect2() {
     numberGiven = false;
     items = false;
 
-    Game();
+    inCardSelection = false;
+    gameState = false;
   }
 }
 
