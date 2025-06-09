@@ -128,7 +128,7 @@ void setup() {
   while(!Serial);
 
   enemyOrder[0] = {2, 6, 50, "Gremlin"};
-  enemyOrder[1] = {6, 2, 100, "Goblin"};
+  enemyOrder[1] = {6, 2, 20, "Goblin"};
   enemyOrder[2] = {1, 17, 80, "Dwarf"};
   enemyOrder[3] = {4, 12, 40, "Treens"};
   enemyOrder[4] = {6, 10, 0, "Drunk"};
@@ -424,10 +424,13 @@ void loop() {
   }
 
   if (!shakeDetected) {
-    int HP = map(currentPlayer.pHp, 0, currentPlayer.pMaxHp, -1, 5);
+    int HP = map(currentPlayer.pHp, 0, currentPlayer.pMaxHp, 0, 5);
 
-    for (int leftLEDs = -1; leftLEDs < HP; leftLEDs++) {
-      CircuitPlayground.setPixelColor(leftLEDs, 0x00FF00);
+    for (HP; HP > -1; HP--) {
+      CircuitPlayground.setPixelColor(HP, 0x00FF00);
+    }
+    for (HP - 6; HP < 5; HP++) {
+      CircuitPlayground.setPixelColor(HP - 5, 0x000000);
     }
   }
 
@@ -1732,7 +1735,7 @@ void EnemyStunLEDs() {
     lastUpdate = millis();
     toggle = !toggle;
 
-    for (int red = 5; red < 10; red + 2) {
+    for (int red = 5; red < 10; red += 2) {
       if (toggle) {
         CircuitPlayground.setPixelColor(red, 0xFFFF00);
         CircuitPlayground.setPixelColor(red + 1, 0x000000);
