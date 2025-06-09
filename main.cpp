@@ -424,7 +424,7 @@ void loop() {
   }
 
   if (!shakeDetected) {
-    int HP = map(currentPlayer.pHp, 0, currentPlayer.pMaxHp, 0, 5);
+    int HP = map(currentPlayer.pHp, 0, currentPlayer.pMaxHp, -1, 4);
 
     for (HP; HP > -1; HP--) {
       CircuitPlayground.setPixelColor(HP, 0x00FF00);
