@@ -417,7 +417,7 @@ void loop() {
     if (rolling) {
       // rollNumber = random(1, 7);
       // Make some noise and show the dice roll number
-      // CircuitPlayground.playTone(random(400,2000), 20, false);        
+      CircuitPlayground.playTone(random(400,2000), 20, false);        
       CircuitPlayground.clearPixels();
       for (int p=0; p<rollNumber; p++) {
         CircuitPlayground.setPixelColor(dicePixels[rollNumber-1][p], DICE_COLOR);
