@@ -60,7 +60,7 @@ class enemies {
     String eName;
 };
 
-enemies enemyOrder[5];
+enemies enemyOrder[22];
 enemies currentEnemy;
 
 class player{
@@ -86,7 +86,6 @@ bool sCard = false;
 unsigned long rollStartTime;
 bool rolling;
 bool newRoll;
-bool tapDetected;
 uint8_t rollNumber;
 float X, Y, Z, totalAccel;
 
@@ -217,7 +216,7 @@ void setup() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void loop() {
-  block = random(1, 101);
+  // block = random(1, 101);
 
   if (leftFlag && rightFlag && !gameState) {
     delay(5);
@@ -430,7 +429,7 @@ void loop() {
   // Rolling momentum
   // Keep rolling for a period of time even after shaking has stopped.
 
-  rollNumber = random(1, 7);
+  // rollNumber = random(1, 7);
 
   /*
   // Compute a random number from 1 to 6
@@ -631,6 +630,8 @@ void DiceRoll() {
   Serial.println("");
   Serial.print("Shake the Arduino to roll the dice!");
 
+  rollNumber = random(1,7);
+
   if (attackState) {
     diceAttack = true;
   } else if (blockState) {
@@ -784,6 +785,8 @@ void NoPots() {
 }
 
 void EnemyAttack() {
+  block = random(1, 101);
+
   if (!enemyStunned) {
     Serial.println("");
     Serial.println("");
@@ -1296,19 +1299,6 @@ void GainTurn() {
 
 void EnemyCheck() {
   if (currentEnemy.eHp <= 0 && !items) {
-    /*
-    fightState = false;
-    enemyAlive = false;
-    attackState = false;
-    blockState = false;
-    normAttack = false;
-    diceAttack = false;
-    normBlock = false;
-    diceBlock = false;
-    enemyAttack = false;
-    numberGiven = false;
-    */
-
     items = true;
 
     Serial.println("");
@@ -1342,50 +1332,15 @@ void EnemyCheck() {
 }
 
 void Items() {
-  cardRandomizer1 = random(0, 4);
-  cardRandomizer2 = random(0, 4);
+  do {
+    cardRandomizer1 = random(0, 4);
+    cardRandomizer2 = random(0, 4);
+  } while (cardRandomizer1 == cardRandomizer2);
+  
+  cardRandom1 = cardRandomizer1;
+  cardRandom2 = cardRandomizer2;
 
-  if (cardRandomizer1 == 0) {
-    if (cardRandomizer2 == 0) {
-      Items();
-      Serial.print(cardRandomizer1);
-      Serial.print(cardRandomizer2);
-    } else if (cardRandomizer2 != 0) {
-      cardRandom1 = cardRandomizer1;
-      cardRandom2 = cardRandomizer2;
-      Cards();
-    }
-  } else if (cardRandomizer1 == 1) {
-    if (cardRandomizer2 == 1) {
-      Items();
-      Serial.print(cardRandomizer1);
-      Serial.print(cardRandomizer2);
-    } else if (cardRandomizer2 != 1) {
-      cardRandom1 = cardRandomizer1;
-      cardRandom2 = cardRandomizer2;
-      Cards();
-    }
-  } else if (cardRandomizer1 == 2) {
-    if (cardRandomizer2 == 2) {
-      Items();
-      Serial.print(cardRandomizer1);
-      Serial.print(cardRandomizer2);
-    } else if (cardRandomizer2 != 2) {
-      cardRandom1 = cardRandomizer1;
-      cardRandom2 = cardRandomizer2;
-      Cards();
-    }
-  } else if (cardRandomizer1 == 3) {
-    if (cardRandomizer2 == 3) {
-      Items();
-      Serial.print(cardRandomizer1);
-      Serial.print(cardRandomizer2);
-    } else if (cardRandomizer2 != 3) {
-      cardRandom1 = cardRandomizer1;
-      cardRandom2 = cardRandomizer2;
-      Cards();
-    }
-  }
+  Cards();
 }
 
 void Cards() {
@@ -1446,6 +1401,7 @@ void CardSelect1() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    items = false;
 
     Game();
   } else if (cardRandom1 == 1) {
@@ -1471,6 +1427,7 @@ void CardSelect1() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    items = false;
 
     Game();
   } else if (cardRandom1 == 2) {
@@ -1496,6 +1453,7 @@ void CardSelect1() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    items = false;
 
     Game();
   } else if (cardRandom1 == 3) {
@@ -1521,6 +1479,7 @@ void CardSelect1() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    items = false;
 
     Game();
   }
@@ -1550,6 +1509,7 @@ void CardSelect2() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    items = false;
 
     Game();
   } else if (cardRandom2 == 1) {
@@ -1575,6 +1535,7 @@ void CardSelect2() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    items = false;
 
     Game();
   } else if (cardRandom2 == 2) {
@@ -1600,6 +1561,7 @@ void CardSelect2() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    items = false;
 
     Game();
   } else if (cardRandom2 == 3) {
@@ -1625,6 +1587,7 @@ void CardSelect2() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    items = false;
 
     Game();
   }
