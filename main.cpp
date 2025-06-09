@@ -12,12 +12,9 @@
 // MIT License (https://opensource.org/licenses/MIT)
 
 #include <Adafruit_CircuitPlayground.h>
-#include <AsyncDelay.h>
 #include <string.h>
 
 #define DICE_COLOR          0xEA6292    // Dice digits color
-
-AsyncDelay doubleTapCheck;
 
 const byte leftButton = 4;
 const byte rightButton = 5;
@@ -44,6 +41,15 @@ bool enemyAlive = false;
 bool waitingRoll = false;
 bool rolled = false;
 bool numberGiven = false;
+bool items = false;
+
+int cardRandomizer1;
+int cardRandomizer2;
+int cardRandom1;
+int cardRandom2;
+
+int block;
+int savedNumber;
 
 class enemies {
   public:
@@ -53,9 +59,6 @@ class enemies {
     String eName;
 };
 
-int block = random(1, 101);
-int savedNumber;
-
 enemies enemyOrder[5];
 enemies currentEnemy;
 
@@ -63,6 +66,7 @@ class player{
   public:
     int pDmg = 4;
     int pHp = 10;
+    int pMaxHp = 10;
     int hPots = 0;
     int sPots = 0;
     int score = 0;
@@ -72,6 +76,10 @@ class player{
 player p1;
 player currentPlayer;
 
+bool hPotCard = false;
+bool sPotCard = false;
+bool hCard = false;
+bool sCard = false;
 
 unsigned long rollStartTime;
 bool rolling;
@@ -190,6 +198,7 @@ void setup() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void loop() {
+  block = random(1, 101);
 
   if (leftFlag && rightFlag && !gameState) {
     delay(5);
@@ -300,60 +309,9 @@ void loop() {
     rightFlag = false;
   }
 
-  /*
-  if (!switchState && gameState && fightState && enemyAttack && enemyAlive && !playerStunned && !enemyStunned) {
-    Fight();
-    attackState = false;
-    blockState = false;
-    normAttack = false;
-    diceAttack = false;
-    normBlock = false;
-    diceBlock = false;
-    enemyAttack = false;
-  } else if (switchState && gameState && fightState && enemyAttack && enemyAlive && !playerStunned && !enemyStunned) {
-    SwitchCallout();
-    switchCallout = false;
-    attackState = false;
-    blockState = false;
-    normAttack = false;
-    diceAttack = false;
-    normBlock = false;
-    diceBlock = false;
-    enemyAttack = false;
-  }
-  */
-
   if ((switchState || !switchState) && gameState && fightState && enemyAttack && !enemyAlive && (playerStunned || !playerStunned) && (enemyStunned || !enemyStunned)) {
     Game();
   }
-
-  /*
-  if ((switchState || !switchState) && gameState && fightState && !enemyAttack && enemyAlive && playerStunned && !enemyStunned) {
-    LoseTurn();
-    // playerStunned = false;
-  } else if ((switchState || !switchState) && gameState && fightState && !enemyAttack && enemyAlive && !playerStunned && enemyStunned) {
-    GainTurn();
-    enemyStunned = false;
-  }
-  */
-
-/*
-  for (int i = 0; i < 5; i++) {
-    Serial.print(enemyOrder[i].eHp);
-    Serial.print(", ");
-    Serial.print(enemyOrder[i].eDmg);
-    Serial.print(", ");
-    Serial.print(enemyOrder[i].blockChance);
-    Serial.print(", ");
-    Serial.println(enemyOrder[i].eName);
-    delay(1000);
-  }
-
-  // Compute total acceleration
-  // Serial.print(p1.pName);
-  delay(5000);
-*/
-  
   
   X = 0;
   Y = 0;
@@ -438,33 +396,20 @@ void loop() {
     }
   }
 
-  /*
-  if ((totalAccel > 20) && !switchState && gameState && fightState && (blockState || attackState) && !normAttack && !normBlock && (diceAttack || diceBlock) && !potState && !shakeDetected && waitingRoll && !enemyAttack && !rolled && !numberGiven) {
-    shakeDetected = true;
-    waitingRoll = false;
+  if (hPotCard || sPotCard || hCard || sCard) {
+    if (leftFlag) {
+      delay(5);
+      CardSelect1();
+      leftFlag = false;
+    } else if (rightFlag) {
+      delay(5);
+      CardSelect2();
+      rightFlag = false;
+    }
   }
-
-  if (!switchState && gameState && fightState && blockState && !attackState && !normAttack && !diceAttack && !normBlock && diceBlock && !potState && !shakeDetected && !waitingRoll && !enemyAttack && rolled && !numberGiven) {
-    DiceBlock();
-    EnemyAttack();
-    numberGiven = true;
-  }
-
-  if (!switchState && gameState && fightState && !blockState && attackState && !normAttack && diceAttack && !normBlock && !diceBlock && !potState && !shakeDetected && !waitingRoll && !enemyAttack && rolled && !numberGiven) {
-    DiceAttack();
-    EnemyAttack();
-    numberGiven = true;
-  }
-  */
   
   // Rolling momentum
   // Keep rolling for a period of time even after shaking has stopped.
-
-  /*
-  if (newRoll) {
-    if (millis() - rollStartTime > 3000) rolling = false;
-  }
-  */
 
   rollNumber = random(1, 7);
 
@@ -971,10 +916,11 @@ void EnemyAttack() {
     } else if (!playerStunned && !enemyStunned) {
       numberGiven = true;
       enemyAttack = false;
+      // EnemyCheck();
     }
     //numberGiven = true;
     //enemyAttack = false;
-    // EnemyCheck();
+    EnemyCheck();
   } else if (enemyStunned) {
     if (normBlock || diceBlock) {
       Serial.println("");
@@ -1129,7 +1075,8 @@ void GainTurn() {
 }
 
 void EnemyCheck() {
-  if (currentEnemy.eHp <= 0) {
+  if (currentEnemy.eHp <= 0 && !items) {
+    /*
     fightState = false;
     enemyAlive = false;
     attackState = false;
@@ -1140,19 +1087,24 @@ void EnemyCheck() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    */
+
+    items = true;
 
     Serial.println("");
     Serial.println("");
     Serial.println("");
     Serial.println("");
     Serial.println("");
-    Serial.print("You have sucessfully killed ");
+    Serial.print("You have sucessfully killed the ");
     Serial.print(currentEnemy.eName);
     Serial.print("!");
 
     currentPlayer.score++;
 
-    Game();
+    Items();
+
+    //Game();
   } else if (currentEnemy.eHp > 0) {
     fightState = false;
     enemyAlive = true;
@@ -1166,6 +1118,295 @@ void EnemyCheck() {
     numberGiven = false;
 
     Fight();
+  }
+}
+
+void Items() {
+  cardRandomizer1 = random(0, 4);
+  cardRandomizer2 = random(0, 4);
+
+  if (cardRandomizer1 == 0) {
+    if (cardRandomizer2 == 0) {
+      Items();
+      Serial.print(cardRandomizer1);
+      Serial.print(cardRandomizer2);
+    } else if (cardRandomizer2 != 0) {
+      cardRandom1 = cardRandomizer1;
+      cardRandom2 = cardRandomizer2;
+      Cards();
+    }
+  } else if (cardRandomizer1 == 1) {
+    if (cardRandomizer2 == 1) {
+      Items();
+      Serial.print(cardRandomizer1);
+      Serial.print(cardRandomizer2);
+    } else if (cardRandomizer2 != 1) {
+      cardRandom1 = cardRandomizer1;
+      cardRandom2 = cardRandomizer2;
+      Cards();
+    }
+  } else if (cardRandomizer1 == 2) {
+    if (cardRandomizer2 == 2) {
+      Items();
+      Serial.print(cardRandomizer1);
+      Serial.print(cardRandomizer2);
+    } else if (cardRandomizer2 != 2) {
+      cardRandom1 = cardRandomizer1;
+      cardRandom2 = cardRandomizer2;
+      Cards();
+    }
+  } else if (cardRandomizer1 == 3) {
+    if (cardRandomizer2 == 3) {
+      Items();
+      Serial.print(cardRandomizer1);
+      Serial.print(cardRandomizer2);
+    } else if (cardRandomizer2 != 3) {
+      cardRandom1 = cardRandomizer1;
+      cardRandom2 = cardRandomizer2;
+      Cards();
+    }
+  }
+}
+
+void Cards() {
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
+  Serial.print("There are two randomized cards, one on the right and one on the left.");
+  delay(3000);
+  Serial.println("");
+  Serial.println("");
+  Serial.print("After you choose, a random item or stat will be added to your inventory or player!");
+  delay(3000);
+
+  if (cardRandom1 == 0) {
+    hPotCard = true;
+  } else if (cardRandom1 == 1) {
+    sPotCard = true;
+  } else if (cardRandom1 == 2) {
+    hCard = true;
+  } else if (cardRandom1 == 3) {
+    sCard = true;
+  }
+
+  if (cardRandom2 == 0) {
+    hPotCard = true;
+  } else if (cardRandom2 == 1) {
+    sPotCard = true;
+  } else if (cardRandom2 == 2) {
+    hCard = true;
+  } else if (cardRandom2 == 3) {
+    sCard = true;
+  }
+}
+
+void CardSelect1() {
+  if (cardRandom1 == 0) {
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have chosen the card on your left, and it adds 1 Health Potion to your inventory!");
+    delay(3000);
+
+    currentPlayer.hPots++;
+
+    hPotCard = false;
+
+    fightState = false;
+    enemyAlive = true;
+    attackState = false;
+    blockState = false;
+    normAttack = false;
+    diceAttack = false;
+    normBlock = false;
+    diceBlock = false;
+    enemyAttack = false;
+    numberGiven = false;
+
+    Game();
+  } else if (cardRandom1 == 1) {
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have chosen the card on your left, and it adds 1 Strength Potion to your inventory!");
+    delay(3000);
+
+    currentPlayer.sPots++;
+
+    sPotCard = false;
+
+    fightState = false;
+    enemyAlive = true;
+    attackState = false;
+    blockState = false;
+    normAttack = false;
+    diceAttack = false;
+    normBlock = false;
+    diceBlock = false;
+    enemyAttack = false;
+    numberGiven = false;
+
+    Game();
+  } else if (cardRandom1 == 2) {
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have chosen the card on your left, and it adds 4 HP to your total health!");
+    delay(3000);
+
+    currentPlayer.pMaxHp = currentPlayer.pMaxHp + 4;
+
+    hCard = false;
+
+    fightState = false;
+    enemyAlive = true;
+    attackState = false;
+    blockState = false;
+    normAttack = false;
+    diceAttack = false;
+    normBlock = false;
+    diceBlock = false;
+    enemyAttack = false;
+    numberGiven = false;
+
+    Game();
+  } else if (cardRandom1 == 3) {
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have chosen the card on your left, and it adds 1 DMG to your player DMG!");
+    delay(3000);
+
+    currentPlayer.pDmg++;
+
+    sCard = false;
+
+    fightState = false;
+    enemyAlive = true;
+    attackState = false;
+    blockState = false;
+    normAttack = false;
+    diceAttack = false;
+    normBlock = false;
+    diceBlock = false;
+    enemyAttack = false;
+    numberGiven = false;
+
+    Game();
+  }
+}
+
+void CardSelect2() {
+  if (cardRandom2 == 0) {
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have chosen the card on your right, and it adds 1 Health Potion to your inventory!");
+    delay(3000);
+
+    currentPlayer.hPots++;
+
+    hPotCard = false;
+
+    fightState = false;
+    enemyAlive = true;
+    attackState = false;
+    blockState = false;
+    normAttack = false;
+    diceAttack = false;
+    normBlock = false;
+    diceBlock = false;
+    enemyAttack = false;
+    numberGiven = false;
+
+    Game();
+  } else if (cardRandom2 == 1) {
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have chosen the card on your right, and it adds 1 Strength Potion to your inventory!");
+    delay(3000);
+
+    currentPlayer.sPots++;
+
+    sPotCard = false;
+
+    fightState = false;
+    enemyAlive = true;
+    attackState = false;
+    blockState = false;
+    normAttack = false;
+    diceAttack = false;
+    normBlock = false;
+    diceBlock = false;
+    enemyAttack = false;
+    numberGiven = false;
+
+    Game();
+  } else if (cardRandom2 == 2) {
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have chosen the card on your right, and it adds 4 HP to your total health!");
+    delay(3000);
+
+    currentPlayer.pMaxHp = currentPlayer.pMaxHp + 4;
+
+    hCard = false;
+
+    fightState = false;
+    enemyAlive = true;
+    attackState = false;
+    blockState = false;
+    normAttack = false;
+    diceAttack = false;
+    normBlock = false;
+    diceBlock = false;
+    enemyAttack = false;
+    numberGiven = false;
+
+    Game();
+  } else if (cardRandom2 == 3) {
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have chosen the card on your right, and it adds 1 DMG to your player DMG!");
+    delay(3000);
+
+    currentPlayer.pDmg++;
+
+    sCard = false;
+
+    fightState = false;
+    enemyAlive = true;
+    attackState = false;
+    blockState = false;
+    normAttack = false;
+    diceAttack = false;
+    normBlock = false;
+    diceBlock = false;
+    enemyAttack = false;
+    numberGiven = false;
+
+    Game();
   }
 }
 
