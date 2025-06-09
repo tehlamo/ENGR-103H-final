@@ -34,7 +34,9 @@ bool diceBlock = false;
 bool normAttack = false;
 bool diceAttack = false;
 bool playerStunned = false;
+bool playerStunned2 = false;
 bool enemyStunned = false;
+bool enemyStunned2 = false;
 bool shakeDetected = false;
 bool enemyAttack = false;
 bool enemyAlive = false;
@@ -377,12 +379,14 @@ void loop() {
   if (!switchState && gameState && fightState && blockState && !attackState && !normAttack && !diceAttack && !normBlock && diceBlock && !potState && shakeDetected && !waitingRoll && !enemyAttack && rolled && !numberGiven) {
     DiceBlock();
     EnemyAttack();
+    shakeDetected = false;
     // numberGiven = true;
   }
 
   if (!switchState && gameState && fightState && !blockState && attackState && !normAttack && diceAttack && !normBlock && !diceBlock && !potState && shakeDetected && !waitingRoll && !enemyAttack && rolled && !numberGiven) {
     DiceAttack();
     EnemyAttack();
+    shakeDetected = false;
     // numberGiven = true;
   }
 
@@ -424,11 +428,11 @@ void loop() {
       CircuitPlayground.setPixelColor(leftLEDs, 0x00FF00);
     }
 
-    if (playerStunned) {
+    if (playerStunned && !enemyStunned) {
       PlayerStunLEDs();
-    } else if (enemyStunned) {
+    } else if (!playerStunned && enemyStunned) {
       EnemyStunLEDs();
-    } else if (!playerStunned && !enemyStunned) {
+    } else if (!playerStunned && enemyStunned) {
       for (int rightLEDs = 5; rightLEDs < 10; rightLEDs++) {
         CircuitPlayground.setPixelColor(rightLEDs, 0xFFFF00);
       }
@@ -713,7 +717,7 @@ void DiceBlock() {
   Serial.print("!");
   delay(3000);
 
-  shakeDetected = false;
+  // shakeDetected = false;
   rolled = false;
 }
 
@@ -754,7 +758,7 @@ void DiceAttack() {
   Serial.print("!");
   delay(3000);
 
-  shakeDetected = false;
+  // shakeDetected = false;
   rolled = false;
 }
 
@@ -1218,6 +1222,7 @@ void SkipTurn() {
     delay(3000);
 
     enemyStunned = true;
+    enemyStunned2 = true;
   } else if (block > currentEnemy.blockChance) {
     Serial.print(currentEnemy.eName);
     Serial.print(" has decided to attack you, dealing ");
@@ -1335,6 +1340,9 @@ void GainTurn() {
 }
 
 void EnemyCheck() {
+  playerStunned2 = false;
+  enemyStunned2 = false;
+
   if (currentEnemy.eHp <= 0 && !items) {
     items = true;
 
