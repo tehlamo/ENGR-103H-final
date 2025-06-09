@@ -219,7 +219,7 @@ void loop() {
     switchCallout = true;
   }
 
-  if (switchState && gameState && fightState && !attackState && !blockState && !potState && enemyAlive && !playerStunned ) {
+  if (switchState && gameState && fightState && !attackState && !blockState && !potState && enemyAlive && !playerStunned) {
     Pots();
     potState = true;
   }
@@ -281,7 +281,8 @@ void loop() {
 
   if (!switchState && gameState && fightState && !attackState && blockState && !potState && !normBlock && !diceBlock && rightFlag && enemyAlive && !playerStunned) {
     delay(5);
-    diceBlock = true;
+    // diceBlock = true;
+    DiceRoll();
     rightFlag = false;
   }
 
@@ -416,7 +417,7 @@ void loop() {
     if (rolling) {
       // rollNumber = random(1, 7);
       // Make some noise and show the dice roll number
-      CircuitPlayground.playTone(random(400,2000), 20, false);        
+      // CircuitPlayground.playTone(random(400,2000), 20, false);        
       CircuitPlayground.clearPixels();
       for (int p=0; p<rollNumber; p++) {
         CircuitPlayground.setPixelColor(dicePixels[rollNumber-1][p], DICE_COLOR);
@@ -836,6 +837,42 @@ void EnemyAttack() {
         Serial.print(currentEnemy.eName);
         Serial.print(" decided to attack and you blocked it's attack, stunning it!");
         enemyStunned = true;
+
+        if (diceBlock) {
+          if (savedNumber < 3) {
+            lowRoll = 0;
+
+            for (int chance = 3; chance > savedNumber; chance--) {
+              lowRoll++;
+            }
+
+            currentPlayer.pHp = currentPlayer.pHp - lowRoll;
+
+            Serial.println("");
+            Serial.println("");
+            Serial.print("Because you rolled a ");
+            Serial.print(savedNumber);
+            Serial.print(", you took ");
+            Serial.print(lowRoll);
+            Serial.print(" extra damage!");
+          } else if (savedNumber >= 3) {
+            highRoll = 0;
+
+            for (int chance = 3; chance < savedNumber; chance++) {
+              highRoll++;
+            }
+
+            currentEnemy.eHp = currentEnemy.eHp - highRoll;
+
+            Serial.println("");
+            Serial.println("");
+            Serial.print("Because you rolled a ");
+            Serial.print(savedNumber);
+            Serial.print(", you dealt ");
+            Serial.print(highRoll);
+            Serial.print(" extra damage!");
+          }
+        }
       } else if (normAttack || diceAttack) {
         if (diceAttack) {
           // Serial.print("checking");
@@ -848,6 +885,9 @@ void EnemyAttack() {
             }
 
             currentEnemy.eHp = currentEnemy.eHp - currentPlayer.pDmg + lowRoll;
+
+            Serial.println("");
+            Serial.println("");
             Serial.print("Because you rolled a ");
             Serial.print(savedNumber);
             Serial.print(", you dealt ");
@@ -863,6 +903,9 @@ void EnemyAttack() {
             }
 
             currentEnemy.eHp = currentEnemy.eHp - currentPlayer.pDmg - highRoll;
+
+            Serial.println("");
+            Serial.println("");
             Serial.print("Because you rolled a ");
             Serial.print(savedNumber);
             Serial.print(", you deal ");
@@ -939,7 +982,63 @@ void EnemyAttack() {
       Serial.println("");
       Serial.print("Why did you waste your free turn on a block?");
       delay(3000);
+    } else if (normAttack || diceAttack) {
+      if (diceAttack) {
+        if (savedNumber < 3) {
+          // Serial.print("low check");
+          lowRoll = 0;
+
+          for (int chance = 3; chance > savedNumber; chance--) {
+            lowRoll++;
+          }
+
+          currentEnemy.eHp = currentEnemy.eHp - currentPlayer.pDmg + lowRoll;
+          Serial.print("Because you rolled a ");
+          Serial.print(savedNumber);
+          Serial.print(", you dealt ");
+          Serial.print(lowRoll);
+          Serial.print(" less damage! ");
+        } else if (savedNumber >= 3) {
+          // Serial.print("high check");
+          highRoll = 0;
+
+          for (int chance = 3; chance < savedNumber; chance++) {
+            highRoll++;
+            // Serial.print("high for");
+          }
+
+          currentEnemy.eHp = currentEnemy.eHp - currentPlayer.pDmg - highRoll;
+
+          Serial.println("");
+          Serial.println("");
+          Serial.print("Because you rolled a ");
+          Serial.print(savedNumber);
+          Serial.print(", you deal ");
+          Serial.print(highRoll);
+          Serial.print(" extra damage!");
+        }
+      } else if (normAttack) {
+        currentEnemy.eHp = currentEnemy.eHp - currentPlayer.pDmg;
+      }
     }
+    Serial.println("");
+    Serial.println("");
+    Serial.print("You have dealt ");
+    // Serial.print(savedNumber);
+    if (savedNumber > 0 && savedNumber < 3) {
+      Serial.print(currentPlayer.pDmg - lowRoll);
+    } else if (savedNumber > 3 && savedNumber < 7) {
+      Serial.print(currentPlayer.pDmg + highRoll);
+    } else {
+      Serial.print(currentPlayer.pDmg);
+    }
+    Serial.print(" DMG to the ");
+    Serial.print(currentEnemy.eName);
+    Serial.print("!");
+    delay(3000);
+
+    enemyStunned = false;
+    EnemyCheck();
   }
 }
 
