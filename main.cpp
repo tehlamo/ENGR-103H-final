@@ -43,6 +43,8 @@ bool rolled = false;
 bool numberGiven = false;
 bool items = false;
 bool inCardSelection = false;
+bool nextTurn = false;
+bool gameOver = false;
 
 int cardRandomizer1;
 int cardRandomizer2;
@@ -217,9 +219,9 @@ void setup() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void loop() {
-  // block = random(1, 101);
+  block = random(1, 101);
 
-  if (leftFlag && rightFlag && !gameState) {
+  if (leftFlag && rightFlag && !gameState && !gameOver) {
     delay(5);
     Game();
     gameState = true;
@@ -328,9 +330,11 @@ void loop() {
     rightFlag = false;
   }
 
+  /*
   if ((switchState || !switchState) && gameState && fightState && enemyAttack && !enemyAlive && (playerStunned || !playerStunned) && (enemyStunned || !enemyStunned)) {
     Game();
   }
+  */
   
   X = 0;
   Y = 0;
@@ -370,13 +374,13 @@ void loop() {
     AfterRoll();
   }
 
-  if (!switchState && gameState && fightState && blockState && !attackState && !normAttack && !diceAttack && !normBlock && diceBlock && !potState && !shakeDetected && !waitingRoll && !enemyAttack && rolled && !numberGiven) {
+  if (!switchState && gameState && fightState && blockState && !attackState && !normAttack && !diceAttack && !normBlock && diceBlock && !potState && shakeDetected && !waitingRoll && !enemyAttack && rolled && !numberGiven) {
     DiceBlock();
     EnemyAttack();
     // numberGiven = true;
   }
 
-  if (!switchState && gameState && fightState && !blockState && attackState && !normAttack && diceAttack && !normBlock && !diceBlock && !potState && !shakeDetected && !waitingRoll && !enemyAttack && rolled && !numberGiven) {
+  if (!switchState && gameState && fightState && !blockState && attackState && !normAttack && diceAttack && !normBlock && !diceBlock && !potState && shakeDetected && !waitingRoll && !enemyAttack && rolled && !numberGiven) {
     DiceAttack();
     EnemyAttack();
     // numberGiven = true;
@@ -410,8 +414,24 @@ void loop() {
 
       savedNumber = rollNumber;
       // Serial.print(savedNumber);
-      shakeDetected = false;
+      // shakeDetected = false;
       rolled = true;
+    }
+  } else if (!shakeDetected) {
+    int HP = map(HP, 0, currentPlayer.pHp, 0, 5);
+
+    for (int leftLEDs = 4; leftLEDs > -1; leftLEDs--) {
+      CircuitPlayground.setPixelColor(leftLEDs, 0x00FF00);
+    }
+
+    if (playerStunned) {
+      PlayerStunLEDs();
+    } else if (enemyStunned) {
+      EnemyStunLEDs();
+    } else if (!playerStunned && !enemyStunned) {
+      for (int rightLEDs = 5; rightLEDs < 10; rightLEDs++) {
+        CircuitPlayground.setPixelColor(rightLEDs, 0xFFFF00);
+      }
     }
   }
 
@@ -427,15 +447,15 @@ void loop() {
     }
   }
 
-  if (!inCardSelection && !gameState && !enemyAlive && !fightState) {
+  if (!inCardSelection && !gameState && !enemyAlive && !fightState && nextTurn && !gameOver) {
     Game();
     gameState = true;
+    nextTurn = false;
   }
-  
   // Rolling momentum
   // Keep rolling for a period of time even after shaking has stopped.
 
-  // rollNumber = random(1, 7);
+  rollNumber = random(1, 7);
 
   /*
   // Compute a random number from 1 to 6
@@ -636,8 +656,6 @@ void DiceRoll() {
   Serial.println("");
   Serial.print("Shake the Arduino to roll the dice!");
 
-  rollNumber = random(1,7);
-
   if (attackState) {
     diceAttack = true;
   } else if (blockState) {
@@ -695,6 +713,7 @@ void DiceBlock() {
   Serial.print("!");
   delay(3000);
 
+  shakeDetected = false;
   rolled = false;
 }
 
@@ -735,6 +754,7 @@ void DiceAttack() {
   Serial.print("!");
   delay(3000);
 
+  shakeDetected = false;
   rolled = false;
 }
 
@@ -782,17 +802,19 @@ void NoPots() {
   Serial.println("");
   Serial.print("Currently, you have 0");
   if (leftFlag) {
+    delay(5);
     Serial.print(" Health potions, ");
+    leftFlag = false;
   } else if (rightFlag) {
+    delay(5);
     Serial.print(" Strength potions, ");
+    rightFlag = false;
   }
   Serial.print(" and are unable to use any.");
   delay(2000);
 }
 
 void EnemyAttack() {
-  block = random(1, 101);
-
   if (!enemyStunned) {
     Serial.println("");
     Serial.println("");
@@ -1207,7 +1229,6 @@ void SkipTurn() {
   }
 
   fightState = false;
-  enemyAlive = true;
   attackState = false;
   blockState = false;
   normAttack = false;
@@ -1216,6 +1237,10 @@ void SkipTurn() {
   diceBlock = false;
   enemyAttack = false;
   numberGiven = false;
+  rolled = false;
+  shakeDetected = false;
+  waitingRoll = false;
+
 
   Fight();
 }
@@ -1264,7 +1289,6 @@ void LoseTurn() {
   playerStunned = false;
 
   fightState = false;
-  enemyAlive = true;
   attackState = false;
   blockState = false;
   normAttack = false;
@@ -1273,6 +1297,10 @@ void LoseTurn() {
   diceBlock = false;
   enemyAttack = false;
   numberGiven = false;
+  rolled = false;
+  shakeDetected = false;
+  waitingRoll = false;
+
 
   Fight();
 }
@@ -1290,7 +1318,6 @@ void GainTurn() {
   delay(3000);
 
   fightState = false;
-  enemyAlive = true;
   attackState = false;
   blockState = false;
   normAttack = false;
@@ -1299,6 +1326,10 @@ void GainTurn() {
   diceBlock = false;
   enemyAttack = false;
   numberGiven = false;
+  rolled = false;
+  shakeDetected = false;
+  waitingRoll = false;
+
   
   Fight();
 }
@@ -1316,14 +1347,37 @@ void EnemyCheck() {
     Serial.print(currentEnemy.eName);
     Serial.print("!");
 
-    currentPlayer.score++;
+    if (currentPlayer.score > 60) {
+      Serial.println("");
+      Serial.println("");
+      Serial.println("");
+      Serial.println("");
+      Serial.println("");
+      Serial.print("Game is over! You win! Unplug the Arduion to play again!");
 
-    Items();
+      gameState = false;
+      fightState = false;
+      attackState = false;
+      blockState = false;
+      normAttack = false;
+      diceAttack = false;
+      normBlock = false;
+      diceBlock = false;
+      enemyAttack = false;
+      numberGiven = false;
+      rolled = false;
+      shakeDetected = false;
+      waitingRoll = false;
+
+      gameOver = true;
+    } else if (currentPlayer.score <= 60) {
+      currentPlayer.score++;
+      Items();
+    }
 
     //Game();
   } else if (currentEnemy.eHp > 0) {
     fightState = false;
-    enemyAlive = true;
     attackState = false;
     blockState = false;
     normAttack = false;
@@ -1332,6 +1386,10 @@ void EnemyCheck() {
     diceBlock = false;
     enemyAttack = false;
     numberGiven = false;
+    rolled = false;
+    shakeDetected = false;
+    waitingRoll = false;
+
 
     Fight();
   }
@@ -1412,6 +1470,7 @@ void CardSelect1() {
 
     inCardSelection = false;
     gameState = false;
+    nextTurn = true;
   } else if (cardRandom1 == 1) {
     Serial.println("");
     Serial.println("");
@@ -1439,6 +1498,7 @@ void CardSelect1() {
 
     inCardSelection = false;
     gameState = false;
+    nextTurn = true;
   } else if (cardRandom1 == 2) {
     Serial.println("");
     Serial.println("");
@@ -1466,6 +1526,7 @@ void CardSelect1() {
 
     inCardSelection = false;
     gameState = false;
+    nextTurn = true;
   } else if (cardRandom1 == 3) {
     Serial.println("");
     Serial.println("");
@@ -1493,6 +1554,7 @@ void CardSelect1() {
 
     inCardSelection = false;
     gameState = false;
+    nextTurn = true;
   }
 }
 
@@ -1524,6 +1586,7 @@ void CardSelect2() {
 
     inCardSelection = false;
     gameState = false;
+    nextTurn = true;
   } else if (cardRandom2 == 1) {
     Serial.println("");
     Serial.println("");
@@ -1551,6 +1614,7 @@ void CardSelect2() {
 
     inCardSelection = false;
     gameState = false;
+    nextTurn = true;
   } else if (cardRandom2 == 2) {
     Serial.println("");
     Serial.println("");
@@ -1578,6 +1642,7 @@ void CardSelect2() {
 
     inCardSelection = false;
     gameState = false;
+    nextTurn = true;
   } else if (cardRandom2 == 3) {
     Serial.println("");
     Serial.println("");
@@ -1605,6 +1670,7 @@ void CardSelect2() {
 
     inCardSelection = false;
     gameState = false;
+    nextTurn = true;
   }
 }
 
@@ -1623,4 +1689,42 @@ void iswitch() {
 void SwitchCallout() {
   Serial.println("");
   Serial.print("Flip the switch to play the game. It can't run when the switch is on this side. The switch can be activated once you begin the fight.");
+}
+
+void PlayerStunLEDs() {
+  for (int red = 0; red < 2; red++) {
+    if (red == 0) {
+      CircuitPlayground.setPixelColor(5, 0xFF0000);
+      CircuitPlayground.setPixelColor(6, 0x000000);
+      CircuitPlayground.setPixelColor(7, 0xFF0000);
+      CircuitPlayground.setPixelColor(8, 0x000000);
+      CircuitPlayground.setPixelColor(9, 0xFF0000);
+    } else if (red == 1) {
+      CircuitPlayground.setPixelColor(5, 0x000000);
+      CircuitPlayground.setPixelColor(6, 0xFF0000);
+      CircuitPlayground.setPixelColor(7, 0x000000);
+      CircuitPlayground.setPixelColor(8, 0xFF0000);
+      CircuitPlayground.setPixelColor(9, 0x000000);
+    }
+    delay(500);
+  }
+}
+
+void EnemyStunLEDs() {
+  for (int red = 0; red < 2; red++) {
+    if (red == 0) {
+      CircuitPlayground.setPixelColor(5, 0xFFFF00);
+      CircuitPlayground.setPixelColor(6, 0x000000);
+      CircuitPlayground.setPixelColor(7, 0xFFFF00);
+      CircuitPlayground.setPixelColor(8, 0x000000);
+      CircuitPlayground.setPixelColor(9, 0xFF0000);
+    } else if (red == 1) {
+      CircuitPlayground.setPixelColor(5, 0x000000);
+      CircuitPlayground.setPixelColor(6, 0xFFFF00);
+      CircuitPlayground.setPixelColor(7, 0x000000);
+      CircuitPlayground.setPixelColor(8, 0xFFFF00);
+      CircuitPlayground.setPixelColor(9, 0x000000);
+    }
+    delay(500);
+  }
 }
