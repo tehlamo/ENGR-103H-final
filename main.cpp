@@ -127,7 +127,7 @@ void setup() {
   Serial.begin(9600);
   while(!Serial);
 
-  enemyOrder[0] = {2, 6, 100, "Gremlin"};
+  enemyOrder[0] = {2, 6, 50, "Gremlin"};
   enemyOrder[1] = {6, 2, 100, "Goblin"};
   enemyOrder[2] = {1, 17, 80, "Dwarf"};
   enemyOrder[3] = {4, 12, 40, "Treens"};
@@ -169,7 +169,7 @@ void setup() {
 
   p1.pName = Serial.readStringUntil('\n');
 
-  /*
+  
   Serial.print("Ready to play, ");
   Serial.print(p1.pName);
   Serial.println("? Here are the basic rules of the game!");
@@ -198,7 +198,7 @@ void setup() {
   delay(3000);
   Serial.println("Now you can hit both buttons to start the game!");
   delay(3000);
-  */
+  
   
   /*
   CircuitPlayground.setBrightness(100);
@@ -421,22 +421,26 @@ void loop() {
       // shakeDetected = false;
       rolled = true;
     }
-  } else if (!shakeDetected) {
-    int HP = map(HP, 0, currentPlayer.pHp, 0, 5);
+  }
 
-    for (int leftLEDs = 4; leftLEDs > -1; leftLEDs--) {
+  if (!shakeDetected) {
+    int HP = map(currentPlayer.pHp, 0, currentPlayer.pMaxHp, -1, 5);
+
+    for (int leftLEDs = -1; leftLEDs < HP; leftLEDs++) {
       CircuitPlayground.setPixelColor(leftLEDs, 0x00FF00);
     }
+  }
 
-    if (playerStunned && !enemyStunned) {
-      PlayerStunLEDs();
-    } else if (!playerStunned && enemyStunned) {
-      EnemyStunLEDs();
-    } else if (!playerStunned && enemyStunned) {
-      for (int rightLEDs = 5; rightLEDs < 10; rightLEDs++) {
-        CircuitPlayground.setPixelColor(rightLEDs, 0xFFFF00);
-      }
-    }
+  if (playerStunned && !enemyStunned) {
+    PlayerStunLEDs();
+  }
+
+  if (!playerStunned && enemyStunned) {
+    EnemyStunLEDs();
+  }
+
+  if (!playerStunned && !enemyStunned && !shakeDetected) {
+    Idle();
   }
 
   if (hPotCard || sPotCard || hCard || sCard) {
@@ -512,7 +516,7 @@ void Game() {
 
   switch (scoreToRange) {
     case 0:
-      currentEnemy = enemyOrder[0];
+      currentEnemy = enemyOrder[random(0, 2)];
       break;
     case 1:
       currentEnemy = enemyOrder[random(1, 3)];
@@ -582,6 +586,7 @@ void Game() {
   Serial.print(currentEnemy.eName);
   Serial.println("!");
   Serial.println("");
+  delay(2000);
 
   if (currentEnemy.eHp > 0) {
     enemyAlive = true;
@@ -1700,39 +1705,77 @@ void SwitchCallout() {
 }
 
 void PlayerStunLEDs() {
-  for (int red = 0; red < 2; red++) {
-    if (red == 0) {
-      CircuitPlayground.setPixelColor(5, 0xFF0000);
-      CircuitPlayground.setPixelColor(6, 0x000000);
-      CircuitPlayground.setPixelColor(7, 0xFF0000);
-      CircuitPlayground.setPixelColor(8, 0x000000);
-      CircuitPlayground.setPixelColor(9, 0xFF0000);
-    } else if (red == 1) {
-      CircuitPlayground.setPixelColor(5, 0x000000);
-      CircuitPlayground.setPixelColor(6, 0xFF0000);
-      CircuitPlayground.setPixelColor(7, 0x000000);
-      CircuitPlayground.setPixelColor(8, 0xFF0000);
-      CircuitPlayground.setPixelColor(9, 0x000000);
+  static unsigned long lastUpdate = 0;
+  static bool toggle = false;
+
+  if (millis() - lastUpdate > 500) {
+    lastUpdate = millis();
+    toggle = !toggle;
+
+    for (int red = 5; red < 10; red + 2) {
+      if (toggle) {
+        CircuitPlayground.setPixelColor(red, 0xFF0000);
+        CircuitPlayground.setPixelColor(red + 1, 0x000000);
+      } else {
+        CircuitPlayground.setPixelColor(red + 1, 0xFF0000);
+        CircuitPlayground.setPixelColor(red, 0x000000);
+      }
     }
-    delay(500);
   }
 }
 
 void EnemyStunLEDs() {
-  for (int red = 0; red < 2; red++) {
-    if (red == 0) {
-      CircuitPlayground.setPixelColor(5, 0xFFFF00);
-      CircuitPlayground.setPixelColor(6, 0x000000);
-      CircuitPlayground.setPixelColor(7, 0xFFFF00);
-      CircuitPlayground.setPixelColor(8, 0x000000);
-      CircuitPlayground.setPixelColor(9, 0xFF0000);
-    } else if (red == 1) {
-      CircuitPlayground.setPixelColor(5, 0x000000);
-      CircuitPlayground.setPixelColor(6, 0xFFFF00);
-      CircuitPlayground.setPixelColor(7, 0x000000);
-      CircuitPlayground.setPixelColor(8, 0xFFFF00);
-      CircuitPlayground.setPixelColor(9, 0x000000);
+  static unsigned long lastUpdate = 0;
+  static bool toggle = false;
+
+  if (millis() - lastUpdate > 500) {
+    lastUpdate = millis();
+    toggle = !toggle;
+
+    for (int red = 5; red < 10; red + 2) {
+      if (toggle) {
+        CircuitPlayground.setPixelColor(red, 0xFFFF00);
+        CircuitPlayground.setPixelColor(red + 1, 0x000000);
+      } else {
+        CircuitPlayground.setPixelColor(red + 1, 0xFFFF00);
+        CircuitPlayground.setPixelColor(red, 0x000000);
+      }
     }
-    delay(500);
+  }
+}
+
+void Idle() {
+  static unsigned long lastUpdate = 0;
+  static bool toggle = false;
+
+  if (millis() - lastUpdate > 500) {
+    lastUpdate = millis();
+    toggle = !toggle;
+  }
+  static uint8_t brightness = 0;
+  static bool increasing = true;
+        
+  for (int blue = 5; blue < 10; blue++) {
+    if (toggle) {
+      CircuitPlayground.setPixelColor(blue, 0, 0, brightness);
+
+      if (increasing) {
+        brightness += 5;
+        if (brightness >= 255) increasing = false;
+      } else {
+        brightness -= 5;
+        if (brightness <= 0) increasing = true;
+      }
+    } else {
+      CircuitPlayground.setPixelColor(blue, 0, 0, brightness);
+
+      if (increasing) {
+        brightness += 5;
+        if (brightness >= 255) increasing = false;
+      } else {
+        brightness -= 5;
+        if (brightness <= 0) increasing = true;
+      }
+    }
   }
 }
